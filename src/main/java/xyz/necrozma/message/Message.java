@@ -5,11 +5,13 @@ public class Message {
     private int type;
     private String text;
 
+    private String token;
+
     public Message() {
-        // no-args constructor
+
     }
 
-    // Getter methods (for each field) can be added here if you want to access the parsed values.
+    // Getter methods (for each field)
     public int getId() {
         return id;
     }
@@ -21,6 +23,8 @@ public class Message {
     public String getText() {
         return text;
     }
+
+    public String getToken() { return token; }
 
     public void setId(int NewId) {
         id = NewId;

@@ -16,7 +16,7 @@ import xyz.necrozma.message.Message;
 import xyz.necrozma.message.MessageHandler;
 import xyz.necrozma.message.MessageParser;
 
-import static xyz.necrozma.firebase.firebase.init;
+import static xyz.necrozma.firebase.firebase.initFirebase;
 
 public class wsServer extends WebSocketServer {
     protected static final Logger logger = LogManager.getLogger(wsServer.class);
@@ -28,18 +28,9 @@ public class wsServer extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        conn.send("Connection established, initiating post connection handshake."); //This method sends a message to the new client
+        conn.send("Connection established"); //This method sends a message to the new client
         // broadcast( "new connection: " + handshake.getResourceDescriptor() ); //This method sends a message to all clients connected
         logger.info("new connection to " + conn.getRemoteSocketAddress());
-
-        Message message = new Message();
-
-        message.setId(1);
-        message.setType(1);
-        message.setText("req pass conn");
-
-        conn.send(new Gson().toJson(message));
-
     }
 
     @Override
@@ -49,15 +40,11 @@ public class wsServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
-        logger.info("received message from "	+ conn.getRemoteSocketAddress() + ": " + message);
+        logger.info("received message from "	+ conn.getRemoteSocketAddress());
 
         Message messageObject = MessageParser.parse(message);
 
-        if (messageObject != null) {
-            logger.info("ID: " + messageObject.getId());
-            logger.info("Type: " + messageObject.getType());
-            logger.info("Text: " + messageObject.getText());
-        } else {
+        if (messageObject == null) {
             logger.warn("Failed to parse the received message.");
 
             Message response = new Message();
@@ -95,7 +82,7 @@ public class wsServer extends WebSocketServer {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
-        init();
+        initFirebase();
 
         String host = "localhost";
         int port = 8887;
