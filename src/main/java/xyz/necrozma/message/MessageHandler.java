@@ -6,20 +6,33 @@ import org.apache.logging.log4j.Logger;
 import org.java_websocket.WebSocket;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
+import static xyz.necrozma.device.HardwareConnection.getDeviceList;
+import static xyz.necrozma.device.HardwareConnection.getDeviceStatus;
 import static xyz.necrozma.firebase.firebase.verifyMessageToken;
 
 public class MessageHandler {
 
     protected static final Logger logger = LogManager.getLogger(MessageHandler.class);
 
+    public static void sendMessage(int id, int type, String text, WebSocket conn) {
+        Message message = new Message();
+
+        message.setId(id);
+        message.setType(type);
+        message.setText(text);
+
+        conn.send(new Gson().toJson(message));
+    }
+
     public static void HandleMessage(Message message, WebSocket conn) {
         String[] knownTypeIntegers = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
         // 1 = ping
-        // 2 = Get device status
-        // 3 = Get device info
+        // 2 = Get device status/info
+        // 3 = TBD
         // 4 = Get device list
         // 5 = Send device command
         // 6 = Send device data
@@ -41,60 +54,44 @@ public class MessageHandler {
 
             if (!validUser) {
                 logger.warn("User is not valid.");
-                Message response = new Message();
-
-                response.setId(1);
-                response.setType(1);
-                response.setText("invalid token");
-
-                logger.info("Sending response: " + new Gson().toJson(response));
-
-                conn.send(new Gson().toJson(response));
+                sendMessage(1, 1, "invalid token", conn);
                 return;
             } else {
                 logger.info("User is valid.");
             }
 
-
-            switch(message.getType()) {
-                case 1:
+            switch (message.getType()) {
+                case 1 -> {
                     logger.info("Message type is 1 (ping).");
-                    Message response = new Message();
-
-                    response.setId(1);
-                    response.setType(0);
-                    response.setText("pong");
-
-                    logger.info("Sending response: " + new Gson().toJson(response));
-
-                    conn.send(new Gson().toJson(response));
-                    break;
-
-                default:
+                    sendMessage(1, 1, "pong", conn);
+                }
+                case 2 -> {
+                    logger.info("Message type is 2 (get device status/info).");
+                    String deviceStatus = getDeviceStatus(message.getText());
+                    sendMessage(1, 2, deviceStatus, conn);
+                }
+                case 4 -> {
+                    logger.info("Message type is 4 (get device list).");
+                    ArrayList<String> deviceList = getDeviceList();
+                    sendMessage(1, 4, new Gson().toJson(deviceList), conn);
+                }
+                case 5 -> {
+                    logger.info("Message type is 5 (send device command).");
+                    sendMessage(1, 5, "device command sent", conn);
+                }
+                case 6, 7, 8 -> {
+                    logger.info("Message type is 5 (send device data).");
+                    sendMessage(1, 5, "device data sent", conn);
+                }
+                default -> {
                     logger.warn("Message type not handled!");
-                    Message response2 = new Message();
-
-                    response2.setId(1);
-                    response2.setType(1);
-                    response2.setText("invalid message type");
-
-                    logger.info("Sending response: " + new Gson().toJson(response2));
-
-                    conn.send(new Gson().toJson(response2));
-                    break;
+                    sendMessage(1, 1, "invalid message type", conn);
+                }
             }
 
         } else {
             logger.warn("Message type is unknown.");
-            Message response = new Message();
-
-            response.setId(1);
-            response.setType(1);
-            response.setText("invalid message type");
-
-            logger.info("Sending response: " + new Gson().toJson(response));
-
-            conn.send(new Gson().toJson(response));
+            sendMessage(1, 1, "invalid message type", conn);
         }
     }
 
