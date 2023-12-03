@@ -30,6 +30,21 @@ public class MessageHandler {
     public static void HandleMessage(Message message, WebSocket conn) {
         String[] knownTypeIntegers = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
+        String sampleDeviceInfoJson = """
+                {
+                  "deviceID": "deviceID",
+                  "deviceName": "deviceName",
+                  "deviceType": "deviceType",
+                  "deviceStatus": "deviceStatus",
+                  "deviceData": "deviceData",
+                  "deviceCommands": "deviceCommands",
+                  "teamAName": "teamAName",
+                  "teamBName": "teamBName",
+                  "teamAScore": "6",
+                  "teamBScore": "3"
+                }
+                """;
+
         // 1 = ping
         // 2 = Get device status/info
         // 3 = TBD
@@ -37,7 +52,7 @@ public class MessageHandler {
         // 5 = Send device command
         // 6 = Send device data
         // 7 = Send device data
-        // 8 = Send device data
+        // 8 = Get device data
         // 9 = TBD
 
 
@@ -50,7 +65,8 @@ public class MessageHandler {
         if (Arrays.asList(knownTypeIntegers).contains(String.valueOf(message.getType()))) {
             logger.info("Message type is known.");
 
-            boolean validUser = verifyMessageToken(message.getToken());
+            // boolean validUser = verifyMessageToken(message.getToken());
+            boolean validUser = true; // Testing
 
             if (!validUser) {
                 logger.warn("User is not valid.");
@@ -79,9 +95,14 @@ public class MessageHandler {
                     logger.info("Message type is 5 (send device command).");
                     sendMessage(1, 5, "device command sent", conn);
                 }
-                case 6, 7, 8 -> {
+                case 6, 7 -> {
                     logger.info("Message type is 5 (send device data).");
                     sendMessage(1, 5, "device data sent", conn);
+                }
+                case 8 -> {
+                    logger.info("Message type is 8 (get device data).");
+                    logger.info("Sending sample device info: " + sampleDeviceInfoJson);
+                    sendMessage(1, 18, sampleDeviceInfoJson, conn);
                 }
                 default -> {
                     logger.warn("Message type not handled!");

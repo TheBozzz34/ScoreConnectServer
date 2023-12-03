@@ -47,7 +47,15 @@ public class wsServer extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        conn.send("Connection established"); //This method sends a message to the new client
+        String connectionResponse = """
+                {
+                  "id": 1,
+                  "type": 1,
+                  "text": "connection successful"
+                }""";
+        conn.send(connectionResponse);
+
+
         // broadcast( "new connection: " + handshake.getResourceDescriptor() ); //This method sends a message to all clients connected
         logger.info("new connection to " + conn.getRemoteSocketAddress());
     }
@@ -118,7 +126,7 @@ public class wsServer extends WebSocketServer {
 
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    e.printStackTrace();
+                    logger.error("Error shutting down: " + e.getMessage());
                 }
             }
         });

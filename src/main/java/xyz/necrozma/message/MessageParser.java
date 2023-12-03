@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 public class MessageParser {
     protected static final Logger logger = LogManager.getLogger(MessageParser.class);
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
     public static Message parse(String rawMessage) {
         try {
             logger.info("Parsing message");
