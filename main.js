@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 
 const client = createClient({
     url: 'redis://10.0.0.177'
@@ -24,6 +24,13 @@ wss.on('connection', function connection(ws) {
             case 'set':
                 await client.set(data.boardId, data.boardData);
                 console.log('set', data.boardId );
+                wss.clients.forEach(function each(client) {
+                    if (client.readyState === WebSocket.OPEN) {
+                        const response2 = { boardId: data.boardId, boardData: data.boardData };
+                        client.send(JSON.stringify(response2));
+                    }
+                }
+            );
                 break;
         }
     });
